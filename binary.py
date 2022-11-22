@@ -8,6 +8,10 @@ OS = Enum("OS", ["SYSTEMV", "HPUX", "NETBSD", "LINUX", "GNUHURD", "SOLARIS", "AI
 # refer to https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_layout for meaning
 Type = Enum("Type", ["NONE", "REL", "EXEC", "DYN", "CORE", "LOOS", "HIOS", "LOPROC", "HIPROC"])
 
+# for e_machine. i should have used dicts for os and type too.
+# i got bored of adding more stuff. that's not the goal anyway.
+machine = {0x3e: "AMD x86-64"}
+
 class Binary:
     def __init__(self, bin_data):
         if bin_data[:4] != magic:
@@ -98,6 +102,14 @@ class Binary:
         else:
             print("invalid type header: {}".format(hex(type_bytes)))
             exit(1)
+
+        # figure e_machine. again two bytes.
+        machine_bytes = int.from_bytes(bin_data[17:19], byteorder="big")
+        if not machine_bytes in machine:
+            print("invalid machine header: {}".format(hex(machine_bytes)))
+        else:
+            self.machine = machine_bytes
+
     def print_details(self):
         print("the binary is {}-bit".format(self.bit))
         if self.endian == 1:
@@ -106,3 +118,4 @@ class Binary:
             print("the binary is big endian")
         print("the binary is for {}".format(OS(self.OS)))
         print("the elf type is {}".format(Type(self.type)))
+        print("the machine this elf is for: {}".format(machine[self.machine]))
