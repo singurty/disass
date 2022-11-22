@@ -1,0 +1,4 @@
+helloworld is a small program that prints "hello world!" to the
+terminal. It was writtin in C and complied with GCC for 64-bit Linux.
+Our goal is to disassemble that file. Not to build a generic
+disassembler but a disassembler that disassembles that specific program.
