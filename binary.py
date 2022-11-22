@@ -32,8 +32,40 @@ class Binary:
         # figure out what OS the binary is for
         if bin_data[7] == 0x00:
             self.OS = OS.SYSTEMV
+        elif bin_data[7] == 0x01:
+            self.OS = OS.HPUX
+        elif bin_data[7] == 0x02:
+            self.OS = OS.NETBSD
         elif bin_data[7] == 0x03:
             self.OS = OS.LINUX
+        elif bin_data[7] == 0x04:
+            self.OS = OS.GNUHURD
+        elif bin_data[7] == 0x06:
+            self.OS = OS.SOLARIS
+        elif bin_data[7] == 0x07:
+            self.OS = OS.AIX
+        elif bin_data[7] == 0x08:
+            self.OS = OS.IRIX
+        elif bin_data[7] == 0x09:
+            self.OS = OS.FREEBSD
+        elif bin_data[7] == 0x0a:
+            self.OS = OS.TRU64
+        elif bin_data[7] == 0x0b:
+            self.OS = OS.NOVELLMODESTO
+        elif bin_data[7] == 0x0c:
+            self.OS = OS.OPENBSD
+        elif bin_data[7] == 0x0d:
+            self.OS = OS.OPENVMS
+        elif bin_data[7] == 0x0e:
+            self.OS = OS.NONSTOPKERNEL
+        elif bin_data[7] == 0x0f:
+            self.OS = OS.AROS
+        elif bin_data[7] == 0x10:
+            self.OS = OS.FENIXOS
+        elif bin_data[7] == 0x11:
+            self.OS = OS.NUXICLOUDABI
+        elif bin_data[7] == 0x12:
+            self.OS = OS.OPENVOS
         else:
             print("invalid operating system header: {}".format(hex(bin_data[7])))
             exit(1)
