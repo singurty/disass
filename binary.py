@@ -77,10 +77,10 @@ class Binary:
             print("invalid operating system header: {}".format(hex(bin_data[7])))
             exit(1)
 
-        # there is no EI_ABIVERSION so treat bin_data[7] to bin_data[15] as EI_PAD
+        # there is no EI_ABIVERSION so treat bin_data[8] to bin_data[16] as EI_PAD
         # figure type of elf
         # e_type is two bytes
-        type_bytes = int.from_bytes(bin_data[15:17], byteorder="big")
+        type_bytes = int.from_bytes(bin_data[16:18], byteorder="little")
         if type_bytes == 0x00:
             self.type = Type.NONE
         elif type_bytes == 0x01:
@@ -104,11 +104,25 @@ class Binary:
             exit(1)
 
         # figure e_machine. again two bytes.
-        machine_bytes = int.from_bytes(bin_data[17:19], byteorder="big")
+        machine_bytes = int.from_bytes(bin_data[18:20], byteorder="little")
         if not machine_bytes in machine:
             print("invalid machine header: {}".format(hex(machine_bytes)))
         else:
             self.machine = machine_bytes
+
+        # again version. bigger this time
+        version_bytes = int.from_bytes(bin_data[20:24], byteorder="little")
+        if not version_bytes == 1:
+            print("invalid elf version: {}".format(version_bytes))
+            exit(1)
+
+        # getting harder to keep track
+        i = 24
+
+        # entry is 8 bytes for 64-bit and 4 bytes for 32-bit. fuck 32-bit for now.
+        # stick to goal
+        self.entry_point = int.from_bytes(bin_data[i:i+8], byteorder="little")
+        i += 8
 
     def print_details(self):
         print("the binary is {}-bit".format(self.bit))
@@ -119,3 +133,4 @@ class Binary:
         print("the binary is for {}".format(OS(self.OS)))
         print("the elf type is {}".format(Type(self.type)))
         print("the machine this elf is for: {}".format(machine[self.machine]))
+        print("the entry point: {}".format(hex(self.entry_point)))
