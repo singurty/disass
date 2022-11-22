@@ -5,6 +5,9 @@ OS = Enum("OS", ["SYSTEMV", "HPUX", "NETBSD", "LINUX", "GNUHURD", "SOLARIS", "AI
                  "FREEBSD", "TRU64", "NOVELLMODESTO", "OPENBSD", "OPENVMS", "NONSTOPKERNEL", 
                  "AROS", "FENIXOS", "NUXICLOUDABI", "OPENVOS"])
 
+# refer to https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_layout for meaning
+Type = Enum("Type", ["NONE", "REL", "EXEC", "DYN", "CORE", "LOOS", "HIOS", "LOPROC", "HIPROC"])
+
 class Binary:
     def __init__(self, bin_data):
         if bin_data[:4] != magic:
@@ -69,6 +72,32 @@ class Binary:
         else:
             print("invalid operating system header: {}".format(hex(bin_data[7])))
             exit(1)
+
+        # there is no EI_ABIVERSION so treat bin_data[7] to bin_data[15] as EI_PAD
+        # figure type of elf
+        # e_type is two bytes
+        type_bytes = int.from_bytes(bin_data[15:17], byteorder="big")
+        if type_bytes == 0x00:
+            self.type = Type.NONE
+        elif type_bytes == 0x01:
+            self.type = Type.REL
+        elif type_bytes == 0x02:
+            self.type = Type.EXEC
+        elif type_bytes == 0x03:
+            self.type = Type.DYN
+        elif type_bytes == 0x04:
+            self.type = Type.CORE
+        elif type_bytes == 0xfe00:
+            self.type = Type.CORE
+        elif type_bytes == 0xfeff:
+            self.type = Type.HIOS
+        elif type_bytes == 0xff00:
+            self.type = Type.LOPROC
+        elif type_bytes == 0xffff:
+            self.type = Type.HIPROC
+        else:
+            print("invalid type header: {}".format(hex(type_bytes)))
+            exit(1)
     def print_details(self):
         print("the binary is {}-bit".format(self.bit))
         if self.endian == 1:
@@ -76,3 +105,4 @@ class Binary:
         else:
             print("the binary is big endian")
         print("the binary is for {}".format(OS(self.OS)))
+        print("the elf type is {}".format(Type(self.type)))
