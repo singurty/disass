@@ -1,5 +1,6 @@
 from enum import Enum
 from program_header import Pheader
+from section_header import Sheader
 
 magic = bytes([0x7f, 0x45, 0x4c, 0x46])
 OS = Enum("OS", ["SYSTEMV", "HPUX", "NETBSD", "LINUX", "GNUHURD", "SOLARIS", "AIX", "IRIX", 
@@ -167,8 +168,13 @@ class Binary:
         self.pheaders = []
         for i in range(self.ph_num):
             off = self.ph_off + (i * self.ph_size)
-            print("current offset: {}".format(off))
             self.pheaders.append(Pheader(bin_data[off:off+self.ph_size], self))
+
+        # process section headers
+        self.sheaders = []
+        for i in range(self.sh_num):
+            off = self.sh_off + (i * self.sh_size)
+            self.sheaders.append(Sheader(bin_data[off:off+self.sh_size], self))
 
     def print_details(self):
         print("the binary is {}-bit".format(self.bit))
@@ -189,3 +195,7 @@ class Binary:
         for i in range(len(self.pheaders)):
             print("\nprogram segment: {}\n".format(i))
             self.pheaders[i].print_details()
+
+        for i in range(len(self.sheaders)):
+            print("\nsection segment: {}\n".format(i))
+            self.sheaders[i].print_details()
