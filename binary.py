@@ -1,4 +1,5 @@
 from enum import Enum
+from program_header import Pheader
 
 magic = bytes([0x7f, 0x45, 0x4c, 0x46])
 OS = Enum("OS", ["SYSTEMV", "HPUX", "NETBSD", "LINUX", "GNUHURD", "SOLARIS", "AIX", "IRIX", 
@@ -128,11 +129,11 @@ class Binary:
         i += 8
 
         # figure program header table pointer. size same as entry
-        self.program_header = int.from_bytes(bin_data[i:i+8], byteorder=self.endian)
+        self.ph_off = int.from_bytes(bin_data[i:i+8], byteorder=self.endian)
         i += 8
 
         # figure section header table poniter. size same as entry
-        self.section_header = int.from_bytes(bin_data[i:i+8], byteorder=self.endian)
+        self.sh_off = int.from_bytes(bin_data[i:i+8], byteorder=self.endian)
         i += 8
 
         # skip e_flags which is 4 bytes
@@ -162,6 +163,13 @@ class Binary:
         self.sh_nameidx = int.from_bytes(bin_data[i:i+2], byteorder=self.endian)
         i += 2
 
+        # process program headers
+        self.pheaders = []
+        for i in range(self.ph_num):
+            off = self.ph_off + (i * self.ph_size)
+            print("current offset: {}".format(off))
+            self.pheaders.append(Pheader(bin_data[off:off+self.ph_size], self))
+
     def print_details(self):
         print("the binary is {}-bit".format(self.bit))
         print("the binary is {} endian".format(self.endian))
@@ -169,10 +177,15 @@ class Binary:
         print("the elf type is {}".format(Type(self.type)))
         print("the machine this elf is for: {}".format(machine[self.machine]))
         print("entry pointer: {}".format(hex(self.entry)))
-        print("program header pointer: {}".format(hex(self.program_header)))
+        print("program header pointer: {}".format(hex(self.ph_off)))
         print("elf header size: {}".format(self.header_size))
         print("program header table entry size: {}".format(self.ph_size))
+        print("section header pointer: {}".format(hex(self.sh_off)))
         print("number of entries in the program header table: {}".format(self.ph_num))
         print("section header table entry size: {}".format(self.sh_size))
         print("number of entries in the section header table: {}".format(self.sh_num))
         print("index of the section header entry that contains section names: {}".format(self.sh_nameidx))
+
+        for i in range(len(self.pheaders)):
+            print("\nprogram segment: {}\n".format(i))
+            self.pheaders[i].print_details()
